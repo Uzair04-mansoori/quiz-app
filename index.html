@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .quiz-meta {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+    }
+/* Timer ring */
+.timer-wrap {
+  position: relative;
+  width: 38px; height: 38px;
+}
+.timer-ring {
+  width: 38px; height: 38px;
+  transform: rotate(-90deg);
+}
+.timer-track {
+  fill: none;
+  stroke: #2a2f42;
+  stroke-width: 3;
+}
+.timer-fill {
+  fill: none;
+  stroke: #00e5a0;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 94.2;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke .4s;
+}
+.timer-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  color: #000;
+}
+.timer-fill.warn {
+    stroke: orange;
+}
+
+.timer-fill.danger {
+    stroke: red;
+}
+
+</style>
+<body>
+
+    <center>
+
+        <div>
+            <h1>Quiz App</h1>
+            <div class="quiz-meta">
+                <span class="q-counter" id="q-counter">Q 3 / 10</span>
+                <span class="score-live">Score: <strong id="score-live">Score: <strong>0</strong></strong></span>
+                <div class="timer-wrap">
+                    <svg viewBox="0 0 36 36" class="timer-ring">
+                    <circle class="timer-track" cx="18" cy="18" r="15"></circle>
+                    <circle class="timer-fill" cx="18" cy="18" r="15" id="timer-ring-fill" style="stroke-dashoffset: 31.4;"></circle>
+                    </svg>
+                    <span class="timer-num" id="timer-num">10</span>
+                </div>
+            </div>
+        </div>
+        <hr>
+        
+        <h2 id="ques"></h2>
+        
+        <form action="thankyou.html">
+            <input onclick="checkQues()" type="radio" name="ans" id="">
+            <label id="opt1" for=""></label>
+            <br>
+
+            <input onclick="checkQues()" type="radio" name="ans" id="">
+            <label for="" id="opt2"></label>
+            <br>
+
+            <input onclick="checkQues()" type="radio" name="ans" id="">
+            <label for="" id="opt3"></label>
+
+            <br><br>
+            <button disabled id="btn" onclick="nextQues()">Next</button>
+        </form>
+    </center>
+        
+    <script src="app.js"></script>
+</body>
+</html>
