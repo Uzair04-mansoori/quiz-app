@@ -1,136 +1,196 @@
-var questions = [
-    {
-        question: 'What does HTML stand for?',
-        option1: 'Hyperlinks and Text Markup Language',
-        option2: 'Hypertext Markup Language',
-        option3: 'Home Tool Markup Language',
-        correctOption: "Hypertext Markup Language"
+const Qs = [{
+        q: 'What does HTML stand for?',
+        o: ['Hyperlinks and Text Markup Language', 'Hypertext Markup Language', 'Home Tool Markup Language'],
+        a: 'Hypertext Markup Language'
     },
     {
-        question: 'Who is making the Web standards?',
-        option1: 'Google',
-        option2: 'The World Wide Web Consortium',
-        option3: 'Microsoft',
-        correctOption: "The World Wide Web Consortium"
+        q: 'Who is making the Web standards?',
+        o: ['Google', 'The World Wide Web Consortium', 'Microsoft'],
+        a: 'The World Wide Web Consortium'
     },
     {
-        question: 'Choose the correct HTML element for the largest heading:',
-        option1: '<heading>',
-        option2: '<h6>',
-        option3: '<h1>',
-        correctOption: "<h1>"
+        q: 'Correct HTML element for the largest heading:',
+        o: ['<heading>', '<h6>', '<h1>'],
+        a: '<h1>'
     },
     {
-        question: 'What is the correct HTML element for inserting a line break?',
-        option1: '<linebreak>',
-        option2: '<br>',
-        option3: '<break>',
-        correctOption: "<br>"
+        q: 'Correct HTML element for inserting a line break?',
+        o: ['<linebreak>', '<br>', '<break>'],
+        a: '<br>'
+    },
+    {
+        q: 'Correct HTML for adding a background color?',
+        o: ['<body bg="yellow">', '<background>yellow</background>', '<body style="background-color:yellow;">'],
+        a: '<body style="background-color:yellow;">'
+    },
+    {
+        q: 'Correct HTML element to define important text:',
+        o: ['<strong>', '<b>', '<i>'],
+        a: '<strong>'
+    },
+    {
+        q: 'Correct HTML element to define emphasized text:',
+        o: ['<italic>', '<i>', '<em>'],
+        a: '<em>'
+    },
+    {
+        q: 'Correct HTML for creating a hyperlink?',
+        o: [
+            '<a>http://www.w3schools.com</a>',
+            '<a href="http://www.w3schools.com">W3Schools</a>',
+            '<a url="http://www.w3schools.com">W3Schools.com</a>'
+        ],
+        a: '<a href="http://www.w3schools.com">W3Schools</a>'
     }
 ];
 
-var getQues = document.querySelector("#ques");
-var opt1 = document.querySelector("#opt1");
-var opt2 = document.querySelector("#opt2");
-var opt3 = document.querySelector("#opt3");
+let cur = 0,
+    score = 0,
+    done = false,
+    tid = null,
+    tl = 60;
 
-var index = 0;
-var getBtn = document.getElementById('btn');
+function escapeHTML(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
 
-/* ───────── QUIZ FUNCTION ───────── */
-
-function nextQues() {
-
-    var getOptions = document.getElementsByName('ans');
-
-    for (var i = 0; i < getOptions.length; i++) {
-        getOptions[i].checked = false;
-    }
-
-    if (index >= questions.length) {
-        alert("Question end");
-        stopTimer();
-        return;
-    }
-
-    getQues.innerText = questions[index].question;
-    opt1.innerText = questions[index].option1;
-    opt2.innerText = questions[index].option2;
-    opt3.innerText = questions[index].option3;
-
-    index++;
-
-    startTimer(); 
-/* ───────── TIMER CODE ───────── */
-
-const TIMER_MAX = 15;
-let timeLeft = TIMER_MAX;
-let timerID = null;
-
-const CIRCUMFERENCE = 94.2;
-
-function $(id) {
-    return document.getElementById(id);
+function setT(n) {
+    const el = document.getElementById('tmr-val');
+    el.textContent = n;
+    el.classList.toggle('hot', n <= 10);
 }
 
 function startTimer() {
-    clearInterval(timerID);
-
-    timeLeft = TIMER_MAX;
-    renderTimer();
-
-    timerID = setInterval(() => {
-        timeLeft--;
-        renderTimer();
-
-        if (timeLeft <= 0) {
-            clearInterval(timerID);
-            handleTimeout();
+    clearInterval(tid);
+    tl = 60;
+    setT(60);
+    tid = setInterval(() => {
+        tl--;
+        setT(tl);
+        if (tl <= 0) {
+            clearInterval(tid);
+            if (!done) autoEnd();
         }
     }, 1000);
 }
 
-function stopTimer() {
-    clearInterval(timerID);
+function autoEnd() {
+    done = true;
+    document.querySelectorAll('.opt-row').forEach(o => {
+        o.classList.add('lock');
+        if (o.dataset.v === Qs[cur].a) o.classList.add('correct');
+    });
+    const fb = document.getElementById('fb-text');
+    fb.className = 'bad';
+    fb.textContent = "Time's up — correct answer highlighted.";
+    document.getElementById('next-btn').disabled = false;
 }
 
-function handleTimeout() {
+function loadQ() {
+    done = false;
+    const q = Qs[cur];
+    const pct = Math.round(((cur + 1) / Qs.length) * 100);
 
-    var getOptions = document.getElementsByName('ans');
+    document.getElementById('q-text').textContent = q.q;
+    document.getElementById('q-counter-badge').textContent = 'Question ' + (cur + 1) + ' of ' + Qs.length;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('fb-text').textContent = '';
+    document.getElementById('fb-text').className = '';
 
-    for (var i = 0; i < getOptions.length; i++) {
-        getOptions[i].checked = false;
-    }
+    const nb = document.getElementById('next-btn');
+    nb.disabled = true;
+    nb.innerHTML = cur === Qs.length - 1 ? 'See Results &rarr;' : 'Next &rarr;';
 
-    nextQues();
+    const list = document.getElementById('opts-list');
+    list.innerHTML = '';
+
+    q.o.forEach(op => {
+        const d = document.createElement('div');
+        d.className = 'opt-row';
+        d.dataset.v = op;
+
+        const ring = document.createElement('span');
+        ring.className = 'radio-ring';
+        const dot = document.createElement('span');
+        dot.className = 'radio-inner';
+        ring.appendChild(dot);
+
+        const txt = document.createElement('span');
+        txt.className = 'opt-txt';
+        txt.innerHTML = escapeHTML(op);
+
+        d.appendChild(ring);
+        d.appendChild(txt);
+        d.onclick = () => pick(d, op, q.a);
+        list.appendChild(d);
+    });
+
+    startTimer();
 }
 
-function renderTimer() {
+function pick(el, val, ans) {
+    if (done) return;
+    done = true;
+    clearInterval(tid);
 
-    const fill = $("timer-ring-fill");
-    const num = $("timer-num");
+    document.querySelectorAll('.opt-row').forEach(o => o.classList.add('lock'));
 
-    if (!fill || !num) return;
-
-    const ratio = timeLeft / TIMER_MAX;
-    const offset = CIRCUMFERENCE * (1 - ratio);
-
-    fill.style.strokeDashoffset = offset;
-    num.textContent = timeLeft;
-
-    fill.classList.remove("warn", "danger");
-    num.classList.remove("warn", "danger");
-
-    if (timeLeft <= 5) {
-        fill.classList.add("danger");
-        num.classList.add("danger");
+    const fb = document.getElementById('fb-text');
+    if (val === ans) {
+        el.classList.add('sel', 'correct');
+        fb.className = 'good';
+        fb.textContent = 'Correct!';
+        score++;
+    } else {
+        el.classList.add('sel', 'wrong');
+        fb.className = 'bad';
+        fb.textContent = 'Incorrect — correct answer highlighted.';
+        document.querySelectorAll('.opt-row').forEach(o => {
+            if (o.dataset.v === ans) o.classList.add('correct');
+        });
     }
-    else if (timeLeft <= 8) {
-        fill.classList.add("warn");
-        num.classList.add("warn");
-    }
+    document.getElementById('next-btn').disabled = false;
 }
 
-/* ───────── START QUIZ ───────── */
+function nextQ() {
+    cur++;
+    if (cur >= Qs.length) showResult();
+    else loadQ();
+}
 
-nextQues();
+function showResult() {
+    clearInterval(tid);
+    document.getElementById('quiz-section').style.display = 'none';
+    document.getElementById('result-wrap').style.display = 'block';
+
+    const pct = Math.round((score / Qs.length) * 100);
+    document.getElementById('res-score').textContent = score;
+    document.getElementById('s-cor').textContent = score;
+    document.getElementById('s-wrg').textContent = Qs.length - score;
+    document.getElementById('s-pct').textContent = pct + '%';
+
+    const t = pct === 100 ? 3 : pct >= 75 ? 2 : pct >= 50 ? 1 : 0;
+    const msgs = ['Maybe try a little harder.', 'Better luck next time.', 'You did alright.', 'Great job!'];
+    const subs = [
+        'Review the basics and give it another shot.',
+        'A little revision and you\'ll ace it.',
+        'Good effort — almost there!',
+        'Every single question right. Impressive.'
+    ];
+    document.getElementById('res-msg').textContent = msgs[t];
+    document.getElementById('res-sub').textContent = subs[t];
+}
+
+function restart() {
+    cur = 0;
+    score = 0;
+    done = false;
+    document.getElementById('quiz-section').style.display = 'block';
+    loadQ();
+}
+
+loadQ();
